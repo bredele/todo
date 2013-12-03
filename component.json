@@ -4,7 +4,12 @@
   "description": "todomvc.com",
   "version": "0.0.1",
   "keywords": [],
-  "dependencies": {},
+  "dependencies": {
+    "bredele/view" : "*",
+    "bredele/store" : "*",
+    "bredele/event-plugin" : "*",
+    "bredele/each-plugin" : "*"
+  },
   "development": {},
   "license": "MIT",
   "main": "index.js",

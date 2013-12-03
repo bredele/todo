@@ -10,27 +10,19 @@
   <section id="todoapp">
     <header id="header">
       <h1>todos</h1>
-      <input id="new-todo" placeholder="What needs to be done?" autofocus>
+      <input id="new-todo" placeholder="What needs to be done?" events="on:keypress,submit" autofocus>
     </header>
     <section id="main">
       <input id="toggle-all" type="checkbox">
       <label for="toggle-all">Mark all as complete</label>
-      <ul id="todo-list">
+      <ul id="todo-list" todos>
         <li class="completed">
           <div class="view">
             <input class="toggle" type="checkbox" checked>
-            <label>Create a TodoMVC template</label>
+            <label>{label}</label>
             <button class="destroy"></button>
           </div>
           <input class="edit" value="Create a TodoMVC template">
-        </li>
-        <li>
-          <div class="view">
-            <input class="toggle" type="checkbox">
-            <label>Rule the web</label>
-            <button class="destroy"></button>
-          </div>
-          <input class="edit" value="Rule the web">
         </li>
       </ul>
     </section>
