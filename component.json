@@ -7,7 +7,7 @@
   "dependencies": {
     "bredele/view" : "*",
     "bredele/store" : "*",
-    "bredele/event-plugin" : "*",
+    "bredele/event-plugin" : "*",  
     "bredele/each-plugin" : "*"
   },
   "development": {},

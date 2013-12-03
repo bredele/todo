@@ -15,20 +15,18 @@
     <section id="main">
       <input id="toggle-all" type="checkbox">
       <label for="toggle-all">Mark all as complete</label>
-      <ul id="todo-list" todos>
-        <li class="completed">
-          <div class="view">
-            <input class="toggle" type="checkbox" checked>
-            <label>{label}</label>
-            <button class="destroy"></button>
-          </div>
+      <ul id="todo-list" events="delegate:.toggle,click,status" todos>
+        <li class="{status}">
+          <input class="toggle" type="checkbox" >
+          <label>{label}</label>
+          <button class="destroy"></button>
           <input class="edit" value="Create a TodoMVC template">
         </li>
       </ul>
     </section>
-    <footer id="footer">
+    <footer id="footer" visible>
       <!-- This should be `0 items left` by default -->
-      <span id="todo-count"><strong>1</strong> item left</span>
+      <span id="todo-count"><strong>{length}</strong> item left</span>
       <!-- Remove this if you don't implement routing -->
       <ul id="filters">
         <li>
