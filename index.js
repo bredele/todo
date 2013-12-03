@@ -41,17 +41,5 @@ var controller = {
 todo.html(document.getElementById('todoapp'), stats);
 todo.attr('events', new Events(controller));
 todo.attr('todos', new Each(list));
-//there is a hidden class
-todo.attr('visible', function(node, attr){ //can do better, visible plugin
-	var display = 'none';
-	this.on('change length', function(val){
-		if(val) {
-			display = 'block';
-		} else {
-			display = 'none';
-		}
-		node.setAttribute('style', 'display:' + display);
-	});
-	node.setAttribute('style', 'display:' + display);
-});
+todo.attr('visible', require('hidden-plugin'));
 todo.alive();

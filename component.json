@@ -8,7 +8,8 @@
     "bredele/view" : "*",
     "bredele/store" : "*",
     "bredele/event-plugin" : "*",  
-    "bredele/each-plugin" : "*"
+    "bredele/each-plugin" : "*",
+    "bredele/hidden-plugin" : "*"
   },
   "development": {},
   "license": "MIT",
