@@ -17,7 +17,7 @@
       <label for="toggle-all">Mark all as complete</label>
       <ul id="todo-list" events="delegate:.toggle,click,status;delegate:.destroy,click,del" todos>
         <li class="{status}">
-          <input class="toggle" type="checkbox" >
+          <input class="toggle" type="checkbox" checked="{{checked}}">
           <label>{label}</label>
           <button class="destroy"></button>
           <input class="edit" value="Create a TodoMVC template">
