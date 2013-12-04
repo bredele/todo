@@ -1,6 +1,4 @@
 todo
 ====
 
-todomvc.com
-
-work in progress...
+Worked in progresse based on todomvc.com.
