@@ -10,6 +10,7 @@ var Each = require('each-plugin');
 
 var todo = new View();
 var list = new Store([]);
+todos = new Each(list);
 var stats = new Store({
 	length: 0
 }); //i prefer Store({})
@@ -33,6 +34,13 @@ var controller = {
 	},
 	status: function(){
 		alert('ola');
+	},
+	//the html attribute is huge :s
+	destroy: function(ev, node){
+		var ul = [].slice.call(node.children); //use to array
+		var index = ul.indexOf(ev.target.parentElement);
+		list.del(index);
+		//todos.delItem(list.indexOf(ev.target.parentElement));
 	}
 };
 
@@ -40,6 +48,6 @@ var controller = {
 
 todo.html(document.getElementById('todoapp'), stats);
 todo.attr('events', new Events(controller));
-todo.attr('todos', new Each(list));
+todo.attr('todos', todos);
 todo.attr('visible', require('hidden-plugin'));
 todo.alive();

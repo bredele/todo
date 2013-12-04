@@ -15,7 +15,7 @@
     <section id="main">
       <input id="toggle-all" type="checkbox">
       <label for="toggle-all">Mark all as complete</label>
-      <ul id="todo-list" events="delegate:.toggle,click,status" todos>
+      <ul id="todo-list" events="delegate:.toggle,click,status;delegate:.destroy,click,destroy" todos>
         <li class="{status}">
           <input class="toggle" type="checkbox" >
           <label>{label}</label>
@@ -47,7 +47,7 @@
     <!-- Remove the below line ↓ -->
     <p>Template by <a href="http://github.com/sindresorhus">Sindre Sorhus</a></p>
     <!-- Change this out with your name and url ↓ -->
-    <p>Created by <a href="http://todomvc.com">you</a></p>
+    <p>Created by <a href="http://github.com/bredele" target="_blank">Olivier Wietrich</a></p>
     <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
   </footer>
   <!-- Scripts here. Don't remove this ↓ -->
