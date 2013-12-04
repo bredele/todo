@@ -11,9 +11,11 @@ var Each = require('each-plugin');
 var todo = new View();
 var list = new Store([]);
 todos = new Each(list);
-var stats = new Store({
-	length: 0
+stats = new Store({
+	left: 0,
+	completed: 0
 }); //i prefer Store({})
+
 var length = 0; //trick meanwhile store push
 
 //controller 
@@ -28,19 +30,33 @@ var controller = {
 				status: 'pending' //we set a class which is not needed
 			});
 			length++;
-			stats.set('length', length); //soso
+			stats.set('left', length); //soso
 			node.value = "";
 		}
 	},
-	status: function(){
-		alert('ola');
+	//it seems really complicated
+	status: function(ev, node){
+		var target = ev.target;
+		var parent = target.parentElement;
+		var ul = [].slice.call(node.children); //use to array
+		var store = todos.items[ul.indexOf(parent)].store;
+
+		//sheeeeeit
+		if(target.checked) {
+      store.set('status', 'completed');
+      stats.set('left', stats.get('left') - 1);
+      stats.set('completed', stats.get('completed') + 1);
+		} else {
+      store.set('status', 'pending'); 
+      stats.set('left', stats.get('left') + 1);
+      stats.set('completed', stats.get('completed') - 1);
+		}
+
 	},
 	//the html attribute is huge :s
 	destroy: function(ev, node){
 		var ul = [].slice.call(node.children); //use to array
-		var index = ul.indexOf(ev.target.parentElement);
-		list.del(index);
-		//todos.delItem(list.indexOf(ev.target.parentElement));
+		list.del(ul.indexOf(ev.target.parentElement));
 	}
 };
 

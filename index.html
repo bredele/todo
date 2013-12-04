@@ -24,9 +24,9 @@
         </li>
       </ul>
     </section>
-    <footer id="footer" class="hidden" visible="length">
+    <footer id="footer" class="hidden" visible="left">
       <!-- This should be `0 items left` by default -->
-      <span id="todo-count"><strong>{length}</strong> item left</span>
+      <span id="todo-count"><strong>{left}</strong> item left</span>
       <!-- Remove this if you don't implement routing -->
       <ul id="filters">
         <li>
@@ -39,7 +39,7 @@
           <a href="#/completed">Completed</a>
         </li>
       </ul>
-      <button id="clear-completed">Clear completed (1)</button>
+      <button id="clear-completed" visible="completed">Clear completed ({completed})</button>
     </footer>
   </section>
   <footer id="info">
