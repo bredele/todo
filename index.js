@@ -10,11 +10,13 @@ var Each = require('each-plugin');
 
 var todo = new View();
 var list = new Store([]);
-todos = new Each(list);
+var todos = new Each(list);
 stats = new Store({
-	left: 0,
-	completed: 0
+	completed: 0 //could be a ompute of length and left
 }); //i prefer Store({})
+stats.compute('left', function(){
+	return (list.data.length - this.completed).toString();
+});
 
 var length = 0; //trick meanwhile store push
 
@@ -39,7 +41,8 @@ var controller = {
 		var target = ev.target;
 		var parent = target.parentElement;
 		var ul = [].slice.call(node.children); //use to array
-		var store = todos.items[ul.indexOf(parent)].store;
+		var index = ul.indexOf(parent);
+		var store = todos.items[index].store;
 
 		//sheeeeeit
 		if(target.checked) {
@@ -53,10 +56,37 @@ var controller = {
 		}
 
 	},
+	toggleAll: function(){
+		//do store loop
+		var l = list.data.length;
+		while(l--) {
+			//store should have update
+			list.set(l, {
+				status : 'completed'
+			});
+		}
+	},
+	delAll : function(){
+		//do store loop
+		var l = list.data.length;
+		while(l--) {
+			var item = list.get(l);
+			if(item.status === 'completed') list.del(l);
+		}
+		stats.set('completed', 0);
+	},
 	//the html attribute is huge :s
-	destroy: function(ev, node){
+	del: function(ev, node){
 		var ul = [].slice.call(node.children); //use to array
-		list.del(ul.indexOf(ev.target.parentElement));
+		var index = ul.indexOf(ev.target.parentElement);
+		var store = todos.items[index].store;
+		if(store.get('status') === 'completed') {
+			stats.set('completed', stats.get('completed') - 1);
+		} else {
+			stats.set('left', stats.get('left') - 1);
+		}
+		length--;
+		list.del(index);
 	}
 };
 

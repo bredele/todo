@@ -13,9 +13,9 @@
       <input id="new-todo" placeholder="What needs to be done?" events="on:keypress,submit" autofocus>
     </header>
     <section id="main">
-      <input id="toggle-all" type="checkbox">
+      <input id="toggle-all" type="checkbox" events="on:click,toggleAll">
       <label for="toggle-all">Mark all as complete</label>
-      <ul id="todo-list" events="delegate:.toggle,click,status;delegate:.destroy,click,destroy" todos>
+      <ul id="todo-list" events="delegate:.toggle,click,status;delegate:.destroy,click,del" todos>
         <li class="{status}">
           <input class="toggle" type="checkbox" >
           <label>{label}</label>
@@ -39,7 +39,7 @@
           <a href="#/completed">Completed</a>
         </li>
       </ul>
-      <button id="clear-completed" visible="completed">Clear completed ({completed})</button>
+      <button id="clear-completed" events="on:click,delAll" class="hidden" visible="completed">Clear completed ({completed})</button>
     </footer>
   </section>
   <footer id="info">
