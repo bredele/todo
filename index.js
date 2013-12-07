@@ -17,10 +17,8 @@ stats = new Store({
 });
 
 stats.compute('left', function(){
-	return list.data.length - this.completed; //to string?
+	return (list.data.length - this.completed).toString(); //to string?
 });
-
-
 
 
 
@@ -51,7 +49,8 @@ var controller = {
 				status: 'pending' //we set a class which is not needed
 			});
 			node.value = "";
-			stats.set('left', stats.get('left') + 1); //better way?
+			completed();
+			//stats.set('left', stats.get('left') + 1); //better way?
 		}
 	},
 	//it seems really complicated
@@ -67,13 +66,14 @@ var controller = {
 	toggleAll: function(){
 		//do store loop
 		var l = list.data.length;
+		stats.set('completed', l);
 		while(l--) {
 			//store should have update
-			list.set(l, {
-				status : 'completed'
-			});
+			// list.set(l, {
+			// 	status : 'completed'
+			// });
+			todos.items[l].store.set('status', 'completed');
 		}
-		stats.set('completed', l);
 	},
 	delAll : function(){
 		//do store loop
@@ -96,6 +96,6 @@ var controller = {
 
 todo.html(document.getElementById('todoapp'), stats);
 todo.attr('todos', todos);
-todo.attr('events', new Events(controller));
+todo.attr('events', new Events(controller)); // could be greate to do events(controller) and events.off, etc
 todo.attr('visible', require('hidden-plugin'));
 todo.alive();

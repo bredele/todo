@@ -257,12 +257,15 @@ module.exports = function(node, store) { //may be use an adapter\n\
   var text = node.nodeValue,\n\
       exprs = supplant.attrs(text);\n\
   for(var l = exprs.length; l--;) {\n\
+  \t// var expr = exprs[l];\n\
+  \t// if(expr[0] === '{') {\t\t\n\
+\n\
     store.on('change ' + exprs[l], function() {\n\
       replace(node, text, store);\n\
     });\n\
   }\n\
   replace(node, text, store);\n\
-}\n\
+};\n\
 \n\
 \n\
 function replace(node, text, obj) {\n\
@@ -1605,14 +1608,12 @@ var list = new Store([]);\n\
 var todos = new Each(list);\n\
 \n\
 stats = new Store({\n\
-\tcompleted: 0\n\
+\tleft: 0\n\
 });\n\
 \n\
-stats.compute('left', function(){\n\
-\treturn list.data.length - this.completed; //to string?\n\
+stats.compute('completed', function(){\n\
+\treturn (list.data.length - this.left).toString(); //to string?\n\
 });\n\
-\n\
-\n\
 \n\
 \n\
 \n\
@@ -1628,9 +1629,9 @@ function completed(){\n\
      count = 0;\n\
 \twhile(l--) {\n\
 \t\t//should may be be a boolean\n\
-\t\tif(list.get(l).status === 'completed') count++;\n\
+\t\tif(list.get(l).status === 'pending') count++;\n\
 \t}\n\
-\tstats.set('completed', count);\n\
+\tstats.set('left', count);\n\
 }\n\
 \n\
 var controller = {\n\
@@ -1643,7 +1644,8 @@ var controller = {\n\
 \t\t\t\tstatus: 'pending' //we set a class which is not needed\n\
 \t\t\t});\n\
 \t\t\tnode.value = \"\";\n\
-\t\t\tstats.set('left', stats.get('left') + 1); //better way?\n\
+\t\t\tcompleted();\n\
+\t\t\t//stats.set('left', stats.get('left') + 1); //better way?\n\
 \t\t}\n\
 \t},\n\
 \t//it seems really complicated\n\
@@ -1659,13 +1661,14 @@ var controller = {\n\
 \ttoggleAll: function(){\n\
 \t\t//do store loop\n\
 \t\tvar l = list.data.length;\n\
+\t\tstats.set('completed', l);\n\
 \t\twhile(l--) {\n\
 \t\t\t//store should have update\n\
-\t\t\tlist.set(l, {\n\
-\t\t\t\tstatus : 'completed'\n\
-\t\t\t});\n\
+\t\t\t// list.set(l, {\n\
+\t\t\t// \tstatus : 'completed'\n\
+\t\t\t// });\n\
+\t\t\ttodos.items[l].store.set('status', 'completed');\n\
 \t\t}\n\
-\t\tstats.set('completed', l);\n\
 \t},\n\
 \tdelAll : function(){\n\
 \t\t//do store loop\n\
@@ -1688,7 +1691,7 @@ var controller = {\n\
 \n\
 todo.html(document.getElementById('todoapp'), stats);\n\
 todo.attr('todos', todos);\n\
-todo.attr('events', new Events(controller));\n\
+todo.attr('events', new Events(controller)); // could be greate to do events(controller) and events.off, etc\n\
 todo.attr('visible', require('hidden-plugin'));\n\
 todo.alive();//@ sourceURL=todo/index.js"
 ));
@@ -1748,6 +1751,9 @@ require.alias("bredele-clone/index.js", "bredele-store/deps/clone/index.js");
 require.alias("bredele-clone/index.js", "bredele-store/deps/clone/index.js");
 require.alias("bredele-clone/index.js", "bredele-clone/index.js");
 require.alias("bredele-store/index.js", "bredele-store/index.js");
+require.alias("component-event/index.js", "todo/deps/event/index.js");
+require.alias("component-event/index.js", "event/index.js");
+
 require.alias("bredele-event-plugin/index.js", "todo/deps/event-plugin/index.js");
 require.alias("bredele-event-plugin/index.js", "todo/deps/event-plugin/index.js");
 require.alias("bredele-event-plugin/index.js", "event-plugin/index.js");

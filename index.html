@@ -17,7 +17,7 @@
       <label for="toggle-all">Mark all as complete</label>
       <ul id="todo-list" events="delegate:.toggle,click,status;delegate:.destroy,click,del" todos>
         <li class="{status}">
-          <input class="toggle" type="checkbox" checked="{{checked}}">
+          <input class="toggle" type="checkbox" checked="{label}">
           <label>{label}</label>
           <button class="destroy"></button>
           <input class="edit" value="Create a TodoMVC template">
@@ -27,18 +27,6 @@
     <footer id="footer" class="hidden" visible="left">
       <!-- This should be `0 items left` by default -->
       <span id="todo-count"><strong>{left}</strong> item left</span>
-      <!-- Remove this if you don't implement routing -->
-      <ul id="filters">
-        <li>
-          <a class="selected" href="#/">All</a>
-        </li>
-        <li>
-          <a href="#/active">Active</a>
-        </li>
-        <li>
-          <a href="#/completed">Completed</a>
-        </li>
-      </ul>
       <button id="clear-completed" events="on:click,delAll" class="hidden" visible="completed">Clear completed ({completed})</button>
     </footer>
   </section>
