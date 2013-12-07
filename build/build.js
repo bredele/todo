@@ -1284,49 +1284,50 @@ Events.prototype.destroy = function() {\n\
 \n\
 //@ sourceURL=bredele-event-plugin/index.js"
 ));
-require.register("bredele-each-plugin/index.js", Function("exports, require, module",
+require.register("bredele-list/index.js", Function("exports, require, module",
 "var Binding = require('binding'),\n\
     Store = require('store'),\n\
+    each = require('each'),\n\
     index = require('indexof');\n\
 \n\
 \n\
 \n\
 /**\n\
- * Expose 'event-plugin'\n\
+ * Expose 'List'\n\
  */\n\
 \n\
-module.exports = Plugin;\n\
+module.exports = List;\n\
 \n\
 \n\
 /**\n\
- * Plugin constructor.\n\
- * @param {Object} model (should have getter/setter and inherit from emitter)\n\
+ * List constructor.\n\
+ * \n\
+ * @param {HTMLelement} el\n\
+ * @param {Object} model\n\
  * @api public\n\
  */\n\
 \n\
-function Plugin(store){\n\
-  this.store = store;\n\
+function List(store){\n\
+  this.store = new Store(store);\n\
   this.items = [];\n\
 }\n\
 \n\
 \n\
 /**\n\
- * Each util.\n\
- * Iterate through store.\n\
+ * Bind HTML element with store.\n\
+ * Takes the first child as an item renderer.\n\
+ * \n\
  * @param  {HTMLElement} node \n\
  * @api public\n\
  */\n\
 \n\
-Plugin.prototype.default =  \n\
-Plugin.prototype.each = function(node) {\n\
-  var data = this.store.data;\n\
-  var first = node.children[0];\n\
-  var _this = this;\n\
-  this.node = node;\n\
-  //NOTE: may be instead that get the string of node and pass to the renderer\n\
-  //do benchmark\n\
-  this.clone = first.cloneNode(true);\n\
+List.prototype.default =  \n\
+List.prototype.list = function(node) {\n\
+  var first = node.children[0],\n\
+      _this = this;\n\
 \n\
+  this.node = node;\n\
+  this.clone = first.cloneNode(true);\n\
   node.removeChild(first);\n\
 \n\
 \n\
@@ -1345,10 +1346,87 @@ Plugin.prototype.each = function(node) {\n\
     _this.delItem(idx);\n\
   });\n\
 \n\
-  //NOTE: might be in store (store.loop)\n\
-  for(var i = 0, l = data.length; i < l; i++){\n\
-    this.addItem(i, data[i]);\n\
+  this.store.loop(this.addItem, this);\n\
+};\n\
+\n\
+/**\n\
+ * Return index of node in list.\n\
+ * @param  {HTMLelement} node \n\
+ * @return {Number}  \n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.indexOf = function(node) {\n\
+  var children = [].slice.call(this.node.children);\n\
+  return index(children, node);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Loop over the list items.\n\
+ * Execute callback and pass store item.\n\
+ * \n\
+ * @param  {Function} cb    \n\
+ * @param  {Object}   scope \n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.loop = function(cb, scope) {\n\
+  each(this.items, function(idx, item){\n\
+    cb.call(scope, item.store);\n\
+  });\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Add list item.\n\
+ * \n\
+ * @param {Object} obj\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.add = function(obj) {\n\
+  //in the future, we could use a position\n\
+  this.store.set(this.store.data.length, obj);\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Set list item.\n\
+ * \n\
+ * @param {HTMLElement|Number} idx \n\
+ * @param {Object} obj\n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.set = function(idx, obj) {\n\
+  if(idx instanceof HTMLElement) idx = this.indexOf(idx);\n\
+  var item = this.items[idx].store;\n\
+  each(obj, function(key, val){\n\
+    item.set(key, val);\n\
+  });\n\
+};\n\
+\n\
+\n\
+/**\n\
+ * Delete item(s) in list.\n\
+ * \n\
+ * @api public\n\
+ */\n\
+\n\
+List.prototype.del = function(arg, scope) {\n\
+  //we should optimize store reset\n\
+  if(arg === undefined) return this.store.reset([]);\n\
+  if(typeof arg === 'function') {\n\
+    //could we handle that with inverse loop and store loop?\n\
+    var l = this.store.data.length;\n\
+    while(l--) {\n\
+      if(arg.call(scope, this.items[l].store)){\n\
+        this.store.del(l);\n\
+      }\n\
+    }\n\
   }\n\
+  this.store.del(arg instanceof HTMLElement ? this.indexOf(arg): arg);\n\
 };\n\
 \n\
 \n\
@@ -1358,7 +1436,7 @@ Plugin.prototype.each = function(node) {\n\
  * @api private\n\
  */\n\
 \n\
-Plugin.prototype.addItem = function(key, data) {\n\
+List.prototype.addItem = function(key, data) {\n\
   var item = new ItemRenderer(this.clone, data);\n\
   this.items[key] = item;\n\
   this.node.appendChild(item.dom);\n\
@@ -1371,26 +1449,13 @@ Plugin.prototype.addItem = function(key, data) {\n\
  * @api private\n\
  */\n\
 \n\
-Plugin.prototype.delItem = function(idx) {\n\
+List.prototype.delItem = function(idx) {\n\
     var item = this.items[idx];\n\
     item.unbind(this.node);\n\
-    //delete this.items[idx];\n\
     this.items.splice(idx, 1);\n\
     item = null; //for garbage collection\n\
 };\n\
 \n\
-\n\
-/**\n\
- * Return index of node in list.\n\
- * @param  {HTMLelement} node \n\
- * @return {Number}  \n\
- */\n\
-\n\
-Plugin.prototype.indexOf = function(node) {\n\
-  //works if we use plugin only once (this.node could be in constructor)\n\
-  var children = [].slice.call(this.node.children);\n\
-  return index(children, node);\n\
-};\n\
 \n\
 /**\n\
  * Item renderer.\n\
@@ -1432,7 +1497,7 @@ ItemRenderer.prototype.reset = function(data) {\n\
   this.store.reset(data);\n\
 };\n\
 \n\
-//@ sourceURL=bredele-each-plugin/index.js"
+//@ sourceURL=bredele-list/index.js"
 ));
 require.register("component-classes/index.js", Function("exports, require, module",
 "/**\n\
@@ -1631,13 +1696,12 @@ require.register("todo/index.js", Function("exports, require, module",
 var View = require('view');\n\
 var Store = require('store');\n\
 var Events = require('event-plugin');\n\
-var Each = require('each-plugin');\n\
+var List = require('list');\n\
 \n\
 //init\n\
 \n\
 var todo = new View();\n\
-var list = new Store([]);\n\
-var todos = new Each(list);\n\
+var todos = new List([]);\n\
 \n\
 var stats = new Store({\n\
 \tpending: 0\n\
@@ -1649,73 +1713,57 @@ stats.compute('left', function(){\n\
 });\n\
 \n\
 stats.compute('completed', function(){\n\
-\treturn (list.data.length - this.pending);\n\
+\treturn (todos.store.data.length - this.pending);\n\
 });\n\
 \n\
 //controller \n\
 \n\
-function completed(){\n\
-  var l = list.data.length,\n\
-     count = 0;\n\
-\twhile(l--) {\n\
-\t\t//should may be be a boolean\n\
-\t\tif(list.get(l).status === 'pending') count++;\n\
-\t}\n\
-\tstats.set('pending', count);\n\
+function completed(cb){\n\
+\treturn function(ev){\n\
+\t\tvar count = 0;\n\
+\t\tcb.call(null, ev.target.parentElement, ev); //remove ev when filter submit event\n\
+\t\ttodos.loop(function(todo){\n\
+\t\t\tif(todo.get('status') === 'pending') count++;\n\
+\t\t});\n\
+\t\tstats.set('pending', count);\n\
+\t};\n\
 }\n\
 \n\
 var controller = {\n\
 \t//we should have an input plugin\n\
-\tsubmit: function(ev, node){\n\
+\tsubmit: completed(function(parent, ev){\n\
+\t\tvar node = ev.target;\n\
 \t\tif(ev.keyCode === 13 && node.value) {\n\
-\t\t\t//store should have push\n\
-\t\t\tlist.set(list.data.length,{\n\
-\t\t\t\tlabel: node.value,\n\
-\t\t\t\tstatus: 'pending' //we set a class which is not needed\n\
+\t\t\ttodos.add({\n\
+\t\t\t\tstatus : 'pending',\n\
+\t\t\t\tlabel: node.value\n\
 \t\t\t});\n\
 \t\t\tnode.value = \"\";\n\
-\t\t\tcompleted();\n\
 \t\t}\n\
-\t},\n\
+\t}),\n\
 \n\
-\t//it seems really complicated\n\
-\tstatus: function(ev, node){\n\
-\t\tvar target = ev.target;\n\
-\n\
-\t\tvar index = todos.indexOf(target.parentElement);\n\
-\t\tvar store = todos.items[index].store;\n\
-\n\
-\t\t//better if boolean\n\
-\t\tstore.set('status', target.checked ? 'completed' : 'pending');\n\
-\t\tcompleted();\n\
-\t},\n\
-\n\
-\ttoggleAll: function(){\n\
-\n\
-\t\tlist.loop(function(l){\n\
-\t\t\ttodos.items[l].store.set('status', 'completed');\n\
+\ttoggle: completed(function(node, ev){\n\
+\t\ttodos.set(node, {\n\
+\t\t\tstatus :  ev.target.checked ? 'completed' : 'pending'\n\
 \t\t});\n\
-\t\t//do store loop\n\
-\t\t// var l = list.data.length;\n\
-\t\t// stats.set('completed', l);\n\
-\t\t// while(l--) {\n\
-\t\t// \ttodos.items[l].store.set('status', 'completed');\n\
-\t\t// }\n\
-\t},\n\
+\t}),\n\
 \n\
-\tdelAll : function(){\n\
-\t\tlist.loop(function(l){\n\
-\t\t\t//for array we could do store.get(index, 'key');...use to function\n\
-\t\t\tif(this.get(l).status === 'completed') this.del(l);\n\
+\ttoggleAll: completed(function(node, ev){\n\
+\t\tvar status = ev.target.checked ? 'completed' : 'pending';\n\
+\t\ttodos.loop(function(todo){\n\
+\t\t\ttodo.set('status', status);\n\
 \t\t});\n\
-\t\tcompleted();\n\
-\t},\n\
+\t}),\n\
 \n\
-\t//the html attribute is huge :s\n\
-\tdel: function(ev, node){\n\
-\t\tlist.del(todos.indexOf(ev.target.parentElement));\n\
-\t\tcompleted();\n\
-\t}\n\
+\tdelAll : completed(function(){\n\
+\t\ttodos.del(function(todo) {\n\
+\t\t\treturn todo.get('status') === 'completed';\n\
+\t\t});\n\
+\t}),\n\
+\n\
+\tdel: completed(function(node){\n\
+\t\ttodos.del(node);\n\
+\t})\n\
 };\n\
 \n\
 //bindings\n\
@@ -1800,11 +1848,11 @@ require.alias("discore-closest/index.js", "discore-closest/index.js");
 require.alias("component-event/index.js", "component-delegate/deps/event/index.js");
 
 require.alias("bredele-event-plugin/index.js", "bredele-event-plugin/index.js");
-require.alias("bredele-each-plugin/index.js", "todo/deps/each-plugin/index.js");
-require.alias("bredele-each-plugin/index.js", "todo/deps/each-plugin/index.js");
-require.alias("bredele-each-plugin/index.js", "each-plugin/index.js");
-require.alias("bredele-binding/index.js", "bredele-each-plugin/deps/binding/index.js");
-require.alias("bredele-binding/index.js", "bredele-each-plugin/deps/binding/index.js");
+require.alias("bredele-list/index.js", "todo/deps/list/index.js");
+require.alias("bredele-list/index.js", "todo/deps/list/index.js");
+require.alias("bredele-list/index.js", "list/index.js");
+require.alias("bredele-binding/index.js", "bredele-list/deps/binding/index.js");
+require.alias("bredele-binding/index.js", "bredele-list/deps/binding/index.js");
 require.alias("bredele-subs/index.js", "bredele-binding/deps/subs/index.js");
 require.alias("bredele-subs/index.js", "bredele-binding/deps/subs/index.js");
 require.alias("bredele-supplant/index.js", "bredele-subs/deps/supplant/index.js");
@@ -1822,8 +1870,8 @@ require.alias("bredele-plugin-parser/index.js", "bredele-plugin-parser/index.js"
 require.alias("component-indexof/index.js", "bredele-binding/deps/indexof/index.js");
 
 require.alias("bredele-binding/index.js", "bredele-binding/index.js");
-require.alias("bredele-store/index.js", "bredele-each-plugin/deps/store/index.js");
-require.alias("bredele-store/index.js", "bredele-each-plugin/deps/store/index.js");
+require.alias("bredele-store/index.js", "bredele-list/deps/store/index.js");
+require.alias("bredele-store/index.js", "bredele-list/deps/store/index.js");
 require.alias("component-emitter/index.js", "bredele-store/deps/emitter/index.js");
 
 require.alias("bredele-each/index.js", "bredele-store/deps/each/index.js");
@@ -1833,9 +1881,12 @@ require.alias("bredele-clone/index.js", "bredele-store/deps/clone/index.js");
 require.alias("bredele-clone/index.js", "bredele-store/deps/clone/index.js");
 require.alias("bredele-clone/index.js", "bredele-clone/index.js");
 require.alias("bredele-store/index.js", "bredele-store/index.js");
-require.alias("component-indexof/index.js", "bredele-each-plugin/deps/indexof/index.js");
+require.alias("component-indexof/index.js", "bredele-list/deps/indexof/index.js");
 
-require.alias("bredele-each-plugin/index.js", "bredele-each-plugin/index.js");
+require.alias("bredele-each/index.js", "bredele-list/deps/each/index.js");
+require.alias("bredele-each/index.js", "bredele-list/deps/each/index.js");
+require.alias("bredele-each/index.js", "bredele-each/index.js");
+require.alias("bredele-list/index.js", "bredele-list/index.js");
 require.alias("bredele-hidden-plugin/index.js", "todo/deps/hidden-plugin/index.js");
 require.alias("bredele-hidden-plugin/index.js", "todo/deps/hidden-plugin/index.js");
 require.alias("bredele-hidden-plugin/index.js", "hidden-plugin/index.js");

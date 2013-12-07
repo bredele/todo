@@ -15,7 +15,7 @@
     <section id="main">
       <input id="toggle-all" type="checkbox" events="on:click,toggleAll">
       <label for="toggle-all">Mark all as complete</label>
-      <ul id="todo-list" events="delegate:.toggle,click,status;delegate:.destroy,click,del" todos>
+      <ul id="todo-list" events="delegate:.toggle,click,toggle;delegate:.destroy,click,del" todos>
         <li class="{status}">
           <input class="toggle" type="checkbox">
           <label>{label}</label>

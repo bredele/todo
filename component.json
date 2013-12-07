@@ -9,7 +9,7 @@
     "bredele/store" : "*",
     "component/event" : "*",
     "bredele/event-plugin" : "*",  
-    "bredele/each-plugin" : "*",
+    "bredele/list" : "*",
     "bredele/hidden-plugin" : "*"
   },
   "development": {},
