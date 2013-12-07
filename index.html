@@ -10,35 +10,34 @@
   <section id="todoapp">
     <header id="header">
       <h1>todos</h1>
-      <input id="new-todo" placeholder="What needs to be done?" events="on:keypress,submit" autofocus>
+      <input id="new-todo" placeholder="What needs to be done?" events="on:keypress,add" autofocus>
     </header>
     <section id="main">
       <input id="toggle-all" type="checkbox" events="on:click,toggleAll">
       <label for="toggle-all">Mark all as complete</label>
-      <ul id="todo-list" events="delegate:.toggle,click,toggle;delegate:.destroy,click,del" todos>
+      <ul id="todo-list" events="delegate:.toggle,click,toggle;delegate:.destroy,click,del;delegate:.label,dblclick,edit" todos>
         <li class="{status}">
           <input class="toggle" type="checkbox">
-          <label>{label}</label>
+          <label class="label">{label}</label>
           <button class="destroy"></button>
-          <input class="edit" value="Create a TodoMVC template">
         </li>
       </ul>
     </section>
     <footer id="footer" class="hidden" visible="left">
-      <!-- This should be `0 items left` by default -->
-      <span id="todo-count"><strong>{left}</strong> item left</span>
-      <button id="clear-completed" events="on:click,delAll" class="hidden" visible="completed">Clear completed ({completed})</button>
+      <span id="todo-count">
+        <strong>{left}</strong> 
+        item left
+      </span>
+      <button id="clear-completed" events="on:click,delAll" class="hidden" visible="completed">
+        Clear completed ({completed})
+      </button>
     </footer>
   </section>
   <footer id="info">
     <p>Double-click to edit a todo</p>
-    <!-- Remove the below line ↓ -->
-    <p>Template by <a href="http://github.com/sindresorhus">Sindre Sorhus</a></p>
-    <!-- Change this out with your name and url ↓ -->
     <p>Created by <a href="http://github.com/bredele" target="_blank">Olivier Wietrich</a></p>
     <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
   </footer>
-  <!-- Scripts here. Don't remove this ↓ -->
   <script src="./build/build.js"></script>
   <script>
     require('todo');

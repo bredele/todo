@@ -1386,6 +1386,7 @@ List.prototype.loop = function(cb, scope) {\n\
  */\n\
 \n\
 List.prototype.add = function(obj) {\n\
+  //store push?\n\
   //in the future, we could use a position\n\
   this.store.set(this.store.data.length, obj);\n\
 };\n\
@@ -1700,79 +1701,86 @@ var List = require('list');\n\
 \n\
 //init\n\
 \n\
-var todo = new View();\n\
+var app = new View();\n\
 var todos = new List([]);\n\
 \n\
-var stats = new Store({\n\
+var store = new Store({\n\
 \tpending: 0\n\
-});\n\
+}); //second arguments could be compute\n\
 \n\
 //we should do that in interpolation\n\
-stats.compute('left', function(){\n\
+store.compute('left', function() {\n\
 \treturn this.pending.toString();\n\
 });\n\
 \n\
-stats.compute('completed', function(){\n\
+store.compute('completed', function() {\n\
+\t//todos should have size\n\
 \treturn (todos.store.data.length - this.pending);\n\
 });\n\
 \n\
 //controller \n\
 \n\
-function completed(cb){\n\
-\treturn function(ev){\n\
+function stats(cb) {\n\
+\treturn function(ev) {\n\
 \t\tvar count = 0;\n\
 \t\tcb.call(null, ev.target.parentElement, ev); //remove ev when filter submit event\n\
-\t\ttodos.loop(function(todo){\n\
+\t\ttodos.loop(function(todo) {\n\
 \t\t\tif(todo.get('status') === 'pending') count++;\n\
 \t\t});\n\
-\t\tstats.set('pending', count);\n\
+\t\tstore.set('pending', count);\n\
 \t};\n\
 }\n\
 \n\
 var controller = {\n\
 \t//we should have an input plugin\n\
-\tsubmit: completed(function(parent, ev){\n\
+\tadd: stats(function(parent, ev) {\n\
 \t\tvar node = ev.target;\n\
 \t\tif(ev.keyCode === 13 && node.value) {\n\
 \t\t\ttodos.add({\n\
 \t\t\t\tstatus : 'pending',\n\
-\t\t\t\tlabel: node.value\n\
+\t\t\t\tlabel : node.value\n\
 \t\t\t});\n\
 \t\t\tnode.value = \"\";\n\
 \t\t}\n\
 \t}),\n\
+  edit : function(ev) {\n\
+  \t//delegate should nay be passe the target\n\
+  \tvar target = ev.target;\n\
+  \ttarget.classList.add('editing');\n\
+  \ttarget.contentEditable = true;\n\
+  },\n\
 \n\
-\ttoggle: completed(function(node, ev){\n\
+\ttoggle : stats(function(node, ev) {\n\
 \t\ttodos.set(node, {\n\
 \t\t\tstatus :  ev.target.checked ? 'completed' : 'pending'\n\
 \t\t});\n\
 \t}),\n\
 \n\
-\ttoggleAll: completed(function(node, ev){\n\
+\ttoggleAll : stats(function(node, ev) {\n\
 \t\tvar status = ev.target.checked ? 'completed' : 'pending';\n\
-\t\ttodos.loop(function(todo){\n\
+\t\ttodos.loop(function(todo) {\n\
 \t\t\ttodo.set('status', status);\n\
 \t\t});\n\
 \t}),\n\
 \n\
-\tdelAll : completed(function(){\n\
+\tdelAll : function() {\n\
 \t\ttodos.del(function(todo) {\n\
 \t\t\treturn todo.get('status') === 'completed';\n\
 \t\t});\n\
-\t}),\n\
+\t},\n\
 \n\
-\tdel: completed(function(node){\n\
+\tdel : stats(function(node) {\n\
 \t\ttodos.del(node);\n\
 \t})\n\
 };\n\
 \n\
 //bindings\n\
 \n\
-todo.html(document.getElementById('todoapp'), stats);\n\
-todo.attr('todos', todos);\n\
-todo.attr('events', new Events(controller)); // could be greate to do events(controller) and events.off, etc\n\
-todo.attr('visible', require('hidden-plugin'));\n\
-todo.alive();//@ sourceURL=todo/index.js"
+app.html(document.getElementById('todoapp'), store);\n\
+app.attr('todos', todos);\n\
+app.attr('events', new Events(controller)); // could be greate to do events(controller) and events.off, etc\n\
+app.attr('visible', require('hidden-plugin'));\n\
+app.alive();//@ sourceURL=todo/index.js"
 ));
 
 
