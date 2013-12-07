@@ -27,11 +27,6 @@ stats.compute('completed', function(){
 
 //controller 
 
-function todoIndex(list, node){
-  var ul = [].slice.call(list.children);
-  return ul.indexOf(node.parentElement);
-}
-
 function completed(){
   var l = list.data.length,
      count = 0;
@@ -55,39 +50,50 @@ var controller = {
 			completed();
 		}
 	},
+
 	//it seems really complicated
 	status: function(ev, node){
 		var target = ev.target;
-		var index = todoIndex(node, target);
+
+		var index = todos.indexOf(target.parentElement);
 		var store = todos.items[index].store;
 
 		//better if boolean
-		store.set('status', ev.target.checked ? 'completed' : 'pending');
+		store.set('status', target.checked ? 'completed' : 'pending');
 		completed();
 	},
 
 	toggleAll: function(){
-		//do store loop
-		var l = list.data.length;
-		stats.set('completed', l);
-		while(l--) {
+
+		list.loop(function(l){
 			todos.items[l].store.set('status', 'completed');
-		}
+		});
+		//do store loop
+		// var l = list.data.length;
+		// stats.set('completed', l);
+		// while(l--) {
+		// 	todos.items[l].store.set('status', 'completed');
+		// }
 	},
 
 	delAll : function(){
-		//do store loop
-		var l = list.data.length;
-		while(l--) {
-			var item = list.get(l);
-			if(item.status === 'completed') list.del(l);
-		}
+		//the plugin each should have a polymorphic function
+		// del(1) -> remvoe del 1
+		// del(node)
+		// del(function(){}) -> lopp callback, remove if return true
+		// del() -> remove everything
+
+
+		list.loop(function(l){
+			//for array we could do store.get(index, 'key');...use to function
+			if(this.get(l).status === 'completed') this.del(l);
+		});
 		completed();
 	},
 
 	//the html attribute is huge :s
 	del: function(ev, node){
-		list.del(todoIndex(node, ev.target));
+		list.del(todos.indexOf(ev.target.parentElement));
 		completed();
 	}
 };
