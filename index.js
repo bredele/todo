@@ -64,16 +64,10 @@ var controller = {
 	},
 
 	toggleAll: function(){
-
+    stats.set('completed', list.data.length);
 		list.loop(function(l){
 			todos.items[l].store.set('status', 'completed');
 		});
-		//do store loop
-		// var l = list.data.length;
-		// stats.set('completed', l);
-		// while(l--) {
-		// 	todos.items[l].store.set('status', 'completed');
-		// }
 	},
 
 	delAll : function(){
