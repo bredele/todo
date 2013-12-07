@@ -12,15 +12,18 @@ var todo = new View();
 var list = new Store([]);
 var todos = new Each(list);
 
-stats = new Store({
-	completed: 0
+var stats = new Store({
+	pending: 0
 });
 
+//we should do that in interpolation
 stats.compute('left', function(){
-	return (list.data.length - this.completed).toString(); //to string?
+	return this.pending.toString();
 });
 
-
+stats.compute('completed', function(){
+	return (list.data.length - this.pending);
+});
 
 //controller 
 
@@ -34,15 +37,15 @@ function completed(){
      count = 0;
 	while(l--) {
 		//should may be be a boolean
-		if(list.get(l).status === 'completed') count++;
+		if(list.get(l).status === 'pending') count++;
 	}
-	stats.set('completed', count);
+	stats.set('pending', count);
 }
 
 var controller = {
 	//we should have an input plugin
 	submit: function(ev, node){
-		if(ev.keyCode === 13) {
+		if(ev.keyCode === 13 && node.value) {
 			//store should have push
 			list.set(list.data.length,{
 				label: node.value,
@@ -50,7 +53,6 @@ var controller = {
 			});
 			node.value = "";
 			completed();
-			//stats.set('left', stats.get('left') + 1); //better way?
 		}
 	},
 	//it seems really complicated
@@ -63,18 +65,16 @@ var controller = {
 		store.set('status', ev.target.checked ? 'completed' : 'pending');
 		completed();
 	},
+
 	toggleAll: function(){
 		//do store loop
 		var l = list.data.length;
 		stats.set('completed', l);
 		while(l--) {
-			//store should have update
-			// list.set(l, {
-			// 	status : 'completed'
-			// });
 			todos.items[l].store.set('status', 'completed');
 		}
 	},
+
 	delAll : function(){
 		//do store loop
 		var l = list.data.length;

@@ -1607,15 +1607,18 @@ var todo = new View();\n\
 var list = new Store([]);\n\
 var todos = new Each(list);\n\
 \n\
-stats = new Store({\n\
-\tleft: 0\n\
+var stats = new Store({\n\
+\tpending: 0\n\
+});\n\
+\n\
+//we should do that in interpolation\n\
+stats.compute('left', function(){\n\
+\treturn this.pending.toString();\n\
 });\n\
 \n\
 stats.compute('completed', function(){\n\
-\treturn (list.data.length - this.left).toString(); //to string?\n\
+\treturn (list.data.length - this.pending);\n\
 });\n\
-\n\
-\n\
 \n\
 //controller \n\
 \n\
@@ -1631,13 +1634,13 @@ function completed(){\n\
 \t\t//should may be be a boolean\n\
 \t\tif(list.get(l).status === 'pending') count++;\n\
 \t}\n\
-\tstats.set('left', count);\n\
+\tstats.set('pending', count);\n\
 }\n\
 \n\
 var controller = {\n\
 \t//we should have an input plugin\n\
 \tsubmit: function(ev, node){\n\
-\t\tif(ev.keyCode === 13) {\n\
+\t\tif(ev.keyCode === 13 && node.value) {\n\
 \t\t\t//store should have push\n\
 \t\t\tlist.set(list.data.length,{\n\
 \t\t\t\tlabel: node.value,\n\
@@ -1645,7 +1648,6 @@ var controller = {\n\
 \t\t\t});\n\
 \t\t\tnode.value = \"\";\n\
 \t\t\tcompleted();\n\
-\t\t\t//stats.set('left', stats.get('left') + 1); //better way?\n\
 \t\t}\n\
 \t},\n\
 \t//it seems really complicated\n\
@@ -1658,18 +1660,16 @@ var controller = {\n\
 \t\tstore.set('status', ev.target.checked ? 'completed' : 'pending');\n\
 \t\tcompleted();\n\
 \t},\n\
+\n\
 \ttoggleAll: function(){\n\
 \t\t//do store loop\n\
 \t\tvar l = list.data.length;\n\
 \t\tstats.set('completed', l);\n\
 \t\twhile(l--) {\n\
-\t\t\t//store should have update\n\
-\t\t\t// list.set(l, {\n\
-\t\t\t// \tstatus : 'completed'\n\
-\t\t\t// });\n\
 \t\t\ttodos.items[l].store.set('status', 'completed');\n\
 \t\t}\n\
 \t},\n\
+\n\
 \tdelAll : function(){\n\
 \t\t//do store loop\n\
 \t\tvar l = list.data.length;\n\
