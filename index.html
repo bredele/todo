@@ -25,11 +25,11 @@
     </section>
     <footer id="footer" class="hidden" visible="left">
       <span id="todo-count">
-        <strong>{left}</strong> 
-        item{ pending ? 's' : ''} left
+        <strong>{ '' + left }</strong> 
+        item{ pending ? 's' : '' } left
       </span>
       <button id="clear-completed" events="on:click,delAll" class="hidden" visible="completed">
-        Clear completed ({completed})
+        Clear completed ({ '' + completed })
       </button>
     </footer>
   </section>
