@@ -211,9 +211,117 @@ module.exports = function(str){\n\
   return str.replace(/^\\s*|\\s*$/g, '');\n\
 };//@ sourceURL=bredele-trim/index.js"
 ));
+require.register("bredele-scope/index.js", Function("exports, require, module",
+"var props = require('./lib/props');\n\
+\n\
+/**\n\
+ * Extend scope chain of statement\n\
+ * and return function.\n\
+ *\n\
+ * @param {String} statement\n\
+ * @return {Function} \n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(statement){\n\
+\tvar result = props(statement, 'model.');\n\
+\treturn new Function('model', 'return ' + result);\n\
+};//@ sourceURL=bredele-scope/index.js"
+));
+require.register("bredele-scope/lib/props.js", Function("exports, require, module",
+"/**\n\
+ * Global Names\n\
+ */\n\
+\n\
+var globals = /\\b(Array|Date|Object|Math|JSON)\\b/g;\n\
+\n\
+/**\n\
+ * Return immediate identifiers parsed from `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @param {String|Function} map function or prefix\n\
+ * @return {Array}\n\
+ * @api public\n\
+ */\n\
+\n\
+module.exports = function(str, fn){\n\
+  var p = unique(props(str));\n\
+  if (fn && 'string' == typeof fn) fn = prefixed(fn);\n\
+  if (fn) return map(str, p, fn);\n\
+  return p;\n\
+};\n\
+\n\
+/**\n\
+ * Return immediate identifiers in `str`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function props(str) {\n\
+  return str\n\
+    .replace(/\\.\\w+|\\w+ *\\(|\"[^\"]*\"|'[^']*'|\\/([^/]+)\\//g, '')\n\
+    .replace(globals, '')\n\
+    .match(/[a-zA-Z_]\\w*/g)\n\
+    || [];\n\
+}\n\
+\n\
+/**\n\
+ * Return `str` with `props` mapped with `fn`.\n\
+ *\n\
+ * @param {String} str\n\
+ * @param {Array} props\n\
+ * @param {Function} fn\n\
+ * @return {String}\n\
+ * @api private\n\
+ */\n\
+\n\
+function map(str, props, fn) {\n\
+  var re = /\\.\\w+|\\w+ *\\(|\"[^\"]*\"|'[^']*'|\\/([^/]+)\\/|[a-zA-Z_]\\w*/g;\n\
+  return str.replace(re, function(_){\n\
+    if ('(' == _[_.length - 1]) return fn(_);\n\
+    if (!~props.indexOf(_)) return _;\n\
+    return fn(_);\n\
+  });\n\
+}\n\
+\n\
+/**\n\
+ * Return unique array.\n\
+ *\n\
+ * @param {Array} arr\n\
+ * @return {Array}\n\
+ * @api private\n\
+ */\n\
+\n\
+function unique(arr) {\n\
+  var ret = [];\n\
+\n\
+  for (var i = 0; i < arr.length; i++) {\n\
+    if (~ret.indexOf(arr[i])) continue;\n\
+    ret.push(arr[i]);\n\
+  }\n\
+\n\
+  return ret;\n\
+}\n\
+\n\
+/**\n\
+ * Map with prefix `str`.\n\
+ */\n\
+\n\
+function prefixed(str) {\n\
+  return function(_){\n\
+    return str + _;\n\
+  };\n\
+}//@ sourceURL=bredele-scope/lib/props.js"
+));
 require.register("bredele-supplant/index.js", Function("exports, require, module",
-"var indexOf = require('indexof');\n\
-var trim = require('trim');\n\
+"var indexOf = require('indexof'),\n\
+    trim = require('trim'),\n\
+    scope = require('scope');\n\
+\n\
+\n\
+var cache = {};\n\
 \n\
 \n\
 /**\n\
@@ -225,23 +333,25 @@ var trim = require('trim');\n\
  */\n\
 \n\
 module.exports = function(text, model){\n\
-  //TODO: refactor with attrs\n\
+\t//should we cache in the function the entire text or just the expression?\n\
   return text.replace(/\\{([^}]+)\\}/g, function(_, expr){\n\
-    var value = model.get(trim(expr));\n\
-    return value ? value : '';\n\
+  \tif(/[.'[+(]/.test(expr)) {\n\
+  \t\tvar cb = cache[expr] = cache[expr] || scope(expr);\n\
+  \t\treturn cb(model.data) || '';\n\
+  \t}\n\
+  \treturn model.get(trim(expr)) || '';\n\
   });\n\
 };\n\
 \n\
 \n\
-module.exports.attrs = function(text, model){\n\
+module.exports.attrs = function(text) {\n\
   var exprs = [];\n\
   text.replace(/\\{([^}]+)\\}/g, function(_, expr){\n\
-    var value = trim(expr);\n\
-    if(!~indexOf(exprs, value)) exprs.push(value);\n\
+    var val = trim(expr);\n\
+    if(!~indexOf(exprs, val)) exprs.push(val);\n\
   });\n\
   return exprs;\n\
-};\n\
-//@ sourceURL=bredele-supplant/index.js"
+};//@ sourceURL=bredele-supplant/index.js"
 ));
 require.register("bredele-subs/index.js", Function("exports, require, module",
 "var supplant = require('supplant');\n\
@@ -253,24 +363,19 @@ require.register("bredele-subs/index.js", Function("exports, require, module",
  * @param {Store} store \n\
  */\n\
 \n\
-module.exports = function(node, store) { //may be use an adapter\n\
+module.exports = function(node, store) {\n\
   var text = node.nodeValue,\n\
-      exprs = supplant.attrs(text);\n\
+      exprs = supplant.attrs(text),\n\
+      handle = function() {\n\
+        node.nodeValue = supplant(text, store);\n\
+      };\n\
+\n\
   for(var l = exprs.length; l--;) {\n\
-  \t// var expr = exprs[l];\n\
-  \t// if(expr[0] === '{') {\t\t\n\
-\n\
-    store.on('change ' + exprs[l], function() {\n\
-      replace(node, text, store);\n\
-    });\n\
+    //when destroy binding, we should do off store\n\
+    store.on('change ' + exprs[l], handle);\n\
   }\n\
-  replace(node, text, store);\n\
+  handle();\n\
 };\n\
-\n\
-\n\
-function replace(node, text, obj) {\n\
-  node.nodeValue = supplant(text, obj);\n\
-}\n\
 //@ sourceURL=bredele-subs/index.js"
 ));
 require.register("bredele-plugin-parser/index.js", Function("exports, require, module",
@@ -335,7 +440,25 @@ module.exports = Binding;\n\
 function Binding(model){\n\
   //TODO: mixin with store if not instanceof store\n\
   this.model = model;\n\
+  //this.depth = -1;\n\
   this.plugins = {};\n\
+}\n\
+\n\
+\n\
+/**\n\
+ * Bind object as function.\n\
+ * @api private\n\
+ */\n\
+\n\
+function binder(obj) {\n\
+  return function(el, expr) {\n\
+    var formats = parser(expr);\n\
+    for(var i = 0, l = formats.length; i < l; i++) {\n\
+      var format = formats[i];\n\
+      format.params.splice(0, 0, el);\n\
+      obj[format.method].apply(obj, format.params);\n\
+    }\n\
+  };\n\
 }\n\
 \n\
 \n\
@@ -346,20 +469,9 @@ function Binding(model){\n\
  * @api public\n\
  */\n\
 \n\
-Binding.prototype.attr = function(name, plugin) {\n\
+Binding.prototype.add = function(name, plugin) {\n\
+  if(typeof plugin === 'object') plugin = binder(plugin);\n\
   this.plugins[name] = plugin;\n\
-};\n\
-\n\
-\n\
-/**\n\
- * Add binding by name\n\
- * @param {String} name  \n\
- * @param {Object} plugin \n\
- * @api public\n\
- */\n\
-\n\
-Binding.prototype.data = function(name, plugin) {\n\
-  this.attr(\"data-\" + name, plugin);\n\
 };\n\
 \n\
 \n\
@@ -369,28 +481,18 @@ Binding.prototype.data = function(name, plugin) {\n\
  * @api private\n\
  */\n\
 \n\
-Binding.prototype.attrsBinding = function(node){\n\
-  var attributes = node.attributes;\n\
+Binding.prototype.bindAttrs = function(node){\n\
+  var attrs = node.attributes;\n\
   //reverse loop doesn't work on IE...\n\
-  for(var i = 0, l = attributes.length; i < l; i++){\n\
-    var attribute = attributes[i],\n\
-        plugin = this.plugins[attribute.nodeName],\n\
-        content = attribute.nodeValue;\n\
+  for(var i = 0, l = attrs.length; i < l; i++){\n\
+    var attr = attrs[i],\n\
+        plugin = this.plugins[attr.nodeName],\n\
+        content = attr.nodeValue;\n\
 \n\
     if(plugin) {\n\
-      if(typeof plugin === 'function'){\n\
-        plugin.call(this.model, node, content);\n\
-      } else {\n\
-        //is it necessary...event delegation?\n\
-        var formats = parser(content);\n\
-        for(var j = 0, h = formats.length; j < h; j++) {\n\
-          var format = formats[j];\n\
-          format.params.splice(0,0, node);\n\
-          plugin[format.method].apply(plugin, format.params);\n\
-        }\n\
-      }\n\
+      plugin.call(this.model, node, content);\n\
     } else if(indexOf(content, '{') > -1){\n\
-      subs(attribute, this.model);\n\
+      subs(attr, this.model);\n\
     }\n\
   }\n\
 };\n\
@@ -402,12 +504,12 @@ Binding.prototype.attrsBinding = function(node){\n\
  * @api private\n\
  */\n\
 \n\
-Binding.prototype.applyBindings = function(node) {\n\
+Binding.prototype.bind = function(node) {\n\
   var type = node.nodeType;\n\
   //dom element\n\
-  if (type === 1) return this.attrsBinding(node);\n\
+  if (type === 1) return this.bindAttrs(node);\n\
   // text node\n\
-  if (type == 3) subs(node, this.model);\n\
+  if (type === 3) subs(node, this.model);\n\
 };\n\
 \n\
 \n\
@@ -419,9 +521,8 @@ Binding.prototype.applyBindings = function(node) {\n\
 \n\
 Binding.prototype.apply = function(node) {\n\
   var nodes = node.childNodes;\n\
-  this.applyBindings(node);\n\
-\n\
-  //child nodes are elements and text\n\
+  this.bind(node);\n\
+  //use each?\n\
   for (var i = 0, l = nodes.length; i < l; i++) {\n\
     this.apply(nodes[i]);\n\
   }\n\
@@ -499,7 +600,7 @@ View.prototype.html = function(tmpl, store) { //add mixin obj?\n\
  */\n\
 \n\
 View.prototype.attr = function(name, plug) {\n\
-  this.binding.attr(name, plug);\n\
+  this.binding.add(name, plug);\n\
   return this;\n\
 };\n\
 \n\
@@ -513,8 +614,7 @@ View.prototype.attr = function(name, plug) {\n\
  */\n\
 \n\
 View.prototype.data = function(name, plug) {\n\
-  this.binding.data(name, plug);\n\
-  return this;\n\
+  return this.attr('data-' + name, plug);\n\
 };\n\
 \n\
 \n\
@@ -1792,6 +1892,7 @@ app.alive();//@ sourceURL=todo/index.js"
 
 
 
+
 require.alias("bredele-view/index.js", "todo/deps/view/index.js");
 require.alias("bredele-view/index.js", "todo/deps/view/index.js");
 require.alias("bredele-view/index.js", "view/index.js");
@@ -1806,6 +1907,10 @@ require.alias("component-indexof/index.js", "bredele-supplant/deps/indexof/index
 require.alias("bredele-trim/index.js", "bredele-supplant/deps/trim/index.js");
 require.alias("bredele-trim/index.js", "bredele-supplant/deps/trim/index.js");
 require.alias("bredele-trim/index.js", "bredele-trim/index.js");
+require.alias("bredele-scope/index.js", "bredele-supplant/deps/scope/index.js");
+require.alias("bredele-scope/lib/props.js", "bredele-supplant/deps/scope/lib/props.js");
+require.alias("bredele-scope/index.js", "bredele-supplant/deps/scope/index.js");
+require.alias("bredele-scope/index.js", "bredele-scope/index.js");
 require.alias("bredele-supplant/index.js", "bredele-supplant/index.js");
 require.alias("bredele-subs/index.js", "bredele-subs/index.js");
 require.alias("bredele-plugin-parser/index.js", "bredele-binding/deps/plugin-parser/index.js");
@@ -1870,6 +1975,10 @@ require.alias("component-indexof/index.js", "bredele-supplant/deps/indexof/index
 require.alias("bredele-trim/index.js", "bredele-supplant/deps/trim/index.js");
 require.alias("bredele-trim/index.js", "bredele-supplant/deps/trim/index.js");
 require.alias("bredele-trim/index.js", "bredele-trim/index.js");
+require.alias("bredele-scope/index.js", "bredele-supplant/deps/scope/index.js");
+require.alias("bredele-scope/lib/props.js", "bredele-supplant/deps/scope/lib/props.js");
+require.alias("bredele-scope/index.js", "bredele-supplant/deps/scope/index.js");
+require.alias("bredele-scope/index.js", "bredele-scope/index.js");
 require.alias("bredele-supplant/index.js", "bredele-supplant/index.js");
 require.alias("bredele-subs/index.js", "bredele-subs/index.js");
 require.alias("bredele-plugin-parser/index.js", "bredele-binding/deps/plugin-parser/index.js");
