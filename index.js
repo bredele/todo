@@ -12,13 +12,10 @@ var app = new View();
 var todos = new List([]);
 
 var store = new Store({
+	items: 0,
 	pending: 0
 }); //second arguments could be compute
 
-//we should do that in interpolation
-store.compute('left', function() {
-	return this.pending.toString();
-});
 
 store.compute('completed', function() {
 	//todos should have size
@@ -34,6 +31,7 @@ function stats(cb) {
 		todos.loop(function(todo) {
 			if(todo.get('status') === 'pending') count++;
 		});
+		store.set('items', todos.store.data.length); //have size
 		store.set('pending', count);
 	};
 }
