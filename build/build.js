@@ -1913,8 +1913,7 @@ var store = new Store({\n\
 \n\
 \n\
 store.compute('completed', function() {\n\
-\t//todos should have size\n\
-\treturn (todos.store.data.length - this.pending);\n\
+\treturn this.items - this.pending;\n\
 });\n\
 \n\
 //controller \n\
@@ -1946,7 +1945,7 @@ var controller = {\n\
   edit : function(ev) {\n\
   \t//delegate should nay be passe the target\n\
   \tvar target = ev.target;\n\
-  \ttarget.classList.add('editing');\n\
+  \ttarget.parentElement.classList.add('editing');\n\
   \ttarget.contentEditable = true;\n\
   },\n\
 \n\
@@ -1963,11 +1962,11 @@ var controller = {\n\
 \t\t});\n\
 \t}),\n\
 \n\
-\tdelAll : function() {\n\
+\tdelAll : stats(function() {\n\
 \t\ttodos.del(function(todo) {\n\
 \t\t\treturn todo.get('status') === 'completed';\n\
 \t\t});\n\
-\t},\n\
+\t}),\n\
 \n\
 \tdel : stats(function(node) {\n\
 \t\ttodos.del(node);\n\

@@ -18,8 +18,7 @@ var store = new Store({
 
 
 store.compute('completed', function() {
-	//todos should have size
-	return (todos.store.data.length - this.pending);
+	return this.items - this.pending;
 });
 
 //controller 
@@ -51,7 +50,6 @@ var controller = {
   edit : function(ev) {
   	//delegate should nay be passe the target
   	var target = ev.target;
-  	target.classList.add('editing');
   	target.contentEditable = true;
   },
 
@@ -68,11 +66,11 @@ var controller = {
 		});
 	}),
 
-	delAll : function() {
+	delAll : stats(function() {
 		todos.del(function(todo) {
 			return todo.get('status') === 'completed';
 		});
-	},
+	}),
 
 	del : stats(function(node) {
 		todos.del(node);
