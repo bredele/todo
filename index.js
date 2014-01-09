@@ -1,25 +1,27 @@
 
 //dependencies
 
-var View = require('view');
-var Store = require('store');
-var Events = require('event-plugin');
-var List = require('list');
+var View = require('view'),
+    Store = require('store'),
+    Events = require('event-plugin'),
+    List = require('list'),
+    html = require('./todo.html');
 
 //init
 
 var app = new View();
-var todos = new List([]);
-
+todos = new List([]);
+// todos.store.local('todos', true);
 var store = new Store({
 	items: 0,
 	pending: 0
 }); //second arguments could be compute
-
+// store.local('stats', true);
 
 store.compute('completed', function() {
 	return this.items - this.pending;
 });
+
 
 //controller 
 
@@ -32,6 +34,8 @@ function stats(cb) {
 		});
 		store.set('items', todos.store.data.length); //have size
 		store.set('pending', count);
+		// todos.store.local('todos');
+		// store.local('stats');
 	};
 }
 
@@ -47,6 +51,7 @@ var controller = {
 			node.value = "";
 		}
 	}),
+	
   edit : function(ev) {
   	//delegate should nay be passe the target
   	var target = ev.target;
@@ -79,8 +84,8 @@ var controller = {
 
 //bindings
 
-app.html(document.getElementById('todoapp'), store);
+app.html(html, store);
 app.attr('todos', todos);
 app.attr('events', new Events(controller)); // could be greate to do events(controller) and events.off, etc
 app.attr('visible', require('hidden-plugin'));
-app.alive();
+app.insert(document.querySelector('.todo-container'));

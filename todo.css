@@ -39,6 +39,7 @@ input[type="checkbox"] {
 }
 
 #todoapp {
+    position:relative;
         background: #fff;
         background: rgba(255, 255, 255, 0.9);
         margin: 130px 0 40px 0;
@@ -88,7 +89,7 @@ input[type="checkbox"] {
 }
 
 #header {
-        padding-top: 15px;
+        padding-top:15px;
         border-radius: inherit;
 }
 

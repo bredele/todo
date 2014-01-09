@@ -7,32 +7,7 @@
   <link rel="stylesheet" href="todo.css">
 </head>
 <body>
-  <section id="todoapp">
-    <header id="header">
-      <h1>todos</h1>
-      <input id="new-todo" placeholder="What needs to be done?" events="on:keypress,add" autofocus>
-    </header>
-    <section id="main">
-      <input id="toggle-all" type="checkbox" events="on:click,toggleAll">
-      <label for="toggle-all">Mark all as complete</label>
-      <ul id="todo-list" events="delegate:.toggle,click,toggle;delegate:.destroy,click,del;delegate:.label,dblclick,edit" todos>
-        <li class="{status}">
-          <input class="toggle" type="checkbox">
-          <label class="label">{label}</label>
-          <button class="destroy"></button>
-        </li>
-      </ul>
-    </section>
-    <footer id="footer" class="hidden" visible="items">
-      <span id="todo-count">
-        <strong>{ '' + pending }</strong> 
-        item{ pending !== 1 ? 's' : '' } left
-      </span>
-      <button id="clear-completed" events="on:click,delAll" class="{completed ? '' : 'hidden'}">
-        Clear completed ({ completed })
-      </button>
-    </footer>
-  </section>
+  <div class="todo-container"></div>
   <footer id="info">
     <p>Double-click to edit a todo</p>
     <p>Created by <a href="http://github.com/bredele" target="_blank">Olivier Wietrich</a></p>

@@ -18,6 +18,7 @@
   "scripts": [
     "index.js"
   ],
+  "templates" : ["todo.html"],
   "styles": [
     "todo.css"
   ]
