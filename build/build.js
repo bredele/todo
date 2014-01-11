@@ -1918,17 +1918,6 @@ var controller = {\n\
 };\n\
 \n\
 \n\
-function benchmark(){\n\
-\tconsole.time('olivier');\n\
-\tfor(var l = 200; l--;) {\n\
-\t\ttodos.add({\n\
-\t\t\tlabel: 'foo'\n\
-\t\t});\n\
-\t}\n\
-\tconsole.timeEnd('olivier');\n\
-}\n\
-benchmark();\n\
-\n\
 //bindings\n\
 \n\
 app.html(html, store);\n\

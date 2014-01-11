@@ -78,17 +78,6 @@ var controller = {
 };
 
 
-function benchmark(){
-	console.time('olivier');
-	for(var l = 200; l--;) {
-		todos.add({
-			label: 'foo'
-		});
-	}
-	console.timeEnd('olivier');
-}
-benchmark();
-
 //bindings
 
 app.html(html, store);
