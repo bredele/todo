@@ -10,7 +10,7 @@ var View = require('view'),
 //init
 
 var app = new View();
-todos = new List([]);
+var todos = new List([]);
 // todos.store.local('todos', true);
 var store = new Store({
 	items: 0,
@@ -27,15 +27,16 @@ store.compute('completed', function() {
 
 function stats(cb) {
 	return function(ev) {
-		var count = 0;
-		cb.call(null, ev.target.parentElement, ev); //remove ev when filter submit event
+		var count = 0,
+		    target = ev.target || ev.srcElement;
+
+		ev.target = target;
+		cb.call(null, target.parentElement, ev); //remove ev when filter submit event
 		todos.loop(function(todo) {
 			if(todo.get('status') === 'pending') count++;
 		});
 		store.set('items', todos.store.data.length); //have size
 		store.set('pending', count);
-		// todos.store.local('todos');
-		// store.local('stats');
 	};
 }
 
@@ -52,12 +53,6 @@ var controller = {
 		}
 	}),
 	
-  edit : function(ev) {
-  	//delegate should nay be passe the target
-  	var target = ev.target;
-  	target.contentEditable = true;
-  },
-
 	toggle : stats(function(node, ev) {
 		todos.set(node, {
 			status :  ev.target.checked ? 'completed' : 'pending'
@@ -81,6 +76,18 @@ var controller = {
 		todos.del(node);
 	})
 };
+
+
+function benchmark(){
+	console.time('olivier');
+	for(var l = 200; l--;) {
+		todos.add({
+			label: 'foo'
+		});
+	}
+	console.timeEnd('olivier');
+}
+benchmark();
 
 //bindings
 
